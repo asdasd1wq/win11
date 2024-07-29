@@ -1,4 +1,4 @@
-name: Setup macOS Environment with noVNC
+name: Setup macOS Environment with VNC
 
 on:
   workflow_dispatch:
@@ -19,16 +19,13 @@ jobs:
     - name: Install OpenVPN
       run: brew install openvpn
 
+    - name: Install VNC Server
+      run: brew install tightvnc
+
     - name: Install Python and Websockify
       run: |
         brew install python
-        pip3 install --upgrade websockify
-
-    - name: Download and Update noVNC
-      run: |
-        git clone https://github.com/noVNC/noVNC.git /usr/local/share/novnc || git -C /usr/local/share/novnc pull
-        cd /usr/local/share/novnc
-        git submodule update --init --recursive
+        pip3 install websockify
 
     - name: Download Portmap Configuration
       run: |
@@ -37,31 +34,16 @@ jobs:
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
         
-    - name: Enable Screen Sharing (VNC)
+    - name: Start VNC Server
       run: |
-        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
-        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all
-        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
+        tightvncserver :1 -geometry 1920x1080 -depth 24
+        echo "VNC Server started. You can connect using VNC Viewer with the following credentials."
 
-    - name: Prepare noVNC for HTTPS
+    - name: Output VNC Credentials
       run: |
-        # Create certificates directory
-        sudo mkdir -p /usr/local/share/novnc/certs
-        
-        # Write certificates from GitHub Secrets
-        echo "${{ secrets.NOVNC_CERT }}" | sudo tee /usr/local/share/novnc/certs/cert.crt
-        echo "${{ secrets.NOVNC_KEY }}" | sudo tee /usr/local/share/novnc/certs/key.key
-        
-    - name: Start noVNC Server with HTTPS
-      run: |
-        websockify --cert=/usr/local/share/novnc/certs/cert.crt --key=/usr/local/share/novnc/certs/key.key --web=/usr/local/share/novnc 4000 localhost:5900 &
-    
-    - name: Output User Credentials
-      run: |
-        echo "User Name: KeroAdmin"
-        echo "Password: P@ssw0rd!"
-        
+        echo "VNC Server User: $(whoami)"
+        echo "VNC Server Password: P@ssw0rd!"
+
     - name: Configure OpenVPN
       run: |
         sudo openvpn --config portmap.ovpn
-
