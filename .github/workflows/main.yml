@@ -9,60 +9,53 @@ on:
 
 jobs:
   build:
-    runs-on: windows-11  # افترض أن هذا هو الاسم الصحيح إذا كان متاحاً
+    runs-on: macos-12
 
     steps:
-    - name: Install Chocolatey
+    - name: Install Homebrew
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         
     - name: Install OpenVPN
-      run: choco install openvpn -y
+      run: brew install openvpn
       
     - name: Download Portmap Configuration
       run: |
-        $inputUrl = "${{ github.event.inputs.portmap_config_url }}"
-        $fileName = [System.IO.Path]::GetFileName($inputUrl)
-        $newUrl = "https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
-        Invoke-WebRequest -Uri $newUrl -OutFile "C:\portmap.ovpn"
+        inputUrl="${{ github.event.inputs.portmap_config_url }}"
+        fileName=$(basename "$inputUrl")
+        newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
+        curl -L -o "portmap.ovpn" "$newUrl"
         
-    - name: Enable Remote Desktop
-      run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    - name: Enable Remote Desktop (SSH)
+      run: sudo systemsetup -setremotelogin on
       
-    - name: Set RDP Authentication
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-
-    - name: Open Local User KeroAdmin
+    - name: Configure Firewall for OpenVPN
+      run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add /usr/local/bin/openvpn
+    
+    - name: Create Local Users
       run: |
-        if (-not (Get-LocalUser -Name "KeroAdmin" -ErrorAction SilentlyContinue)) {
-New-LocalUser -Name "KeroAdmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force) -FullName "Kero Admin" -Description "Local user KeroAdmin"
-Add-LocalGroupMember -Group "Administrators" -Member "KeroAdmin"
+        sudo dscl . -create /Users/KeroAdmin
+        sudo dscl . -create /Users/KeroAdmin UserShell /bin/bash
+        sudo dscl . -create /Users/KeroAdmin RealName "Kero Admin"
+        sudo dscl . -create /Users/KeroAdmin UniqueID "510"
+        sudo dscl . -create /Users/KeroAdmin PrimaryGroupID 20
+        sudo dscl . -create /Users/KeroAdmin NFSHomeDirectory /Users/KeroAdmin
+        sudo dscl . -passwd /Users/KeroAdmin "P@ssw0rd!"
+        sudo dscl . -append /Groups/admin GroupMembership KeroAdmin
 
-New-LocalUser -Name "Kero" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force) -FullName "Kero" -Description "Local user Kero"
-Add-LocalGroupMember -Group "Administrators" -Member "Kero"
+        sudo dscl . -create /Users/Kero
+        sudo dscl . -create /Users/Kero UserShell /bin/bash
+        sudo dscl . -create /Users/Kero RealName "Kero"
+        sudo dscl . -create /Users/Kero UniqueID "511"
+        sudo dscl . -create /Users/Kero PrimaryGroupID 20
+        sudo dscl . -create /Users/Kero NFSHomeDirectory /Users/Kero
+        sudo dscl . -passwd /Users/Kero "P@ssw0rd!"
+        sudo dscl . -append /Groups/admin GroupMembership Kero
 
-        } else {
-          Write-Output "User KeroAdmin already exists."
-        }
-
-    - name:  RDP Port 4000
+    - name: Configure OpenVPN
+      run: sudo openvpn --config portmap.ovpn --daemon
+      
+    - name: Output User Credentials
       run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "PortNumber" -Value 4000
-        New-NetFirewallRule -DisplayName "RDP Port 4000" -Direction Inbound -Protocol TCP -LocalPort 4000 -Action Allow
-
-    - name: Restart Remote Desktop Service
-      run: |
-        Restart-Service -Name "TermService" -Force
-
-    - name: The User Name and Password
-      run: |
-        Write-Output "User Name: KeroAdmin"
-        Write-Output "Password: P@ssw0rd!"
-
-
-    - name: Start 
-      run: |
-        Start-Process -NoNewWindow -FilePath "C:\Program Files\OpenVPN\bin\openvpn.exe" -ArgumentList "--config C:\portmap.ovpn" -Wait
-        
-    - name: Enable Terminal Services
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+        echo "User Name: KeroAdmin"
+        echo "Password: P@ssw0rd!"
