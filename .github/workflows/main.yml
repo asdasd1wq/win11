@@ -43,9 +43,19 @@ jobs:
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 
-    - name: Start noVNC Server
+
+    - name: Prepare noVNC for HTTPS
       run: |
-        websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
+        # Create certificates directory
+        sudo mkdir -p /usr/local/share/novnc/certs
+        
+        # Write certificates from GitHub Secrets
+        echo "${{ secrets.NOVNC_CERT }}" | sudo tee /usr/local/share/novnc/certs/cert.crt
+        echo "${{ secrets.NOVNC_KEY }}" | sudo tee /usr/local/share/novnc/certs/key.key
+        
+    - name: Start noVNC Server with HTTPS
+      run: |
+        websockify --cert=/usr/local/share/novnc/certs/cert.crt --key=/usr/local/share/novnc/certs/key.key --web=/usr/local/share/novnc 4000 localhost:5900 &
     
     - name: Output User Credentials
       run: |
@@ -55,5 +65,4 @@ jobs:
     - name: Configure OpenVPN
       run: |
         sudo openvpn --config portmap.ovpn
-
 
