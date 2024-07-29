@@ -22,11 +22,11 @@ jobs:
     - name: Install Python and Websockify
       run: |
         brew install python
-        pip3 install websockify
+        pip3 install --upgrade websockify
 
-    - name: Download noVNC
+    - name: Download and Update noVNC
       run: |
-        git clone https://github.com/noVNC/noVNC.git /usr/local/share/novnc
+        git clone https://github.com/noVNC/noVNC.git /usr/local/share/novnc || git -C /usr/local/share/novnc pull
         cd /usr/local/share/novnc
         git submodule update --init --recursive
 
@@ -42,7 +42,6 @@ jobs:
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
-
 
     - name: Prepare noVNC for HTTPS
       run: |
