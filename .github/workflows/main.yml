@@ -19,10 +19,16 @@ jobs:
     - name: Install OpenVPN
       run: brew install openvpn
 
-    - name: Install noVNC and Websockify
+    - name: Install Python and Websockify
       run: |
-        brew install novnc
-        brew install websockify
+        brew install python
+        pip3 install websockify
+
+    - name: Download noVNC
+      run: |
+        git clone https://github.com/noVNC/noVNC.git /usr/local/share/novnc
+        cd /usr/local/share/novnc
+        git submodule update --init --recursive
 
     - name: Download Portmap Configuration
       run: |
