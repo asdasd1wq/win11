@@ -20,6 +20,7 @@ jobs:
     - name: Install VNC Server
       run: |
         if [ -f VNC-Server.pkg ]; then
+          echo "Package found. Installing..."
           sudo installer -pkg VNC-Server.pkg -target /
         else
           echo "Package not found!"
