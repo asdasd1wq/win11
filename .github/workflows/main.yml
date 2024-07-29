@@ -1,4 +1,4 @@
-name: Kero RDP
+name: Setup macOS Environment with noVNC
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  build:
+  setup:
     runs-on: macos-12
 
     steps:
@@ -18,7 +18,12 @@ jobs:
         
     - name: Install OpenVPN
       run: brew install openvpn
-      
+
+    - name: Install noVNC and Websockify
+      run: |
+        brew install novnc
+        brew install websockify
+
     - name: Download Portmap Configuration
       run: |
         inputUrl="${{ github.event.inputs.portmap_config_url }}"
@@ -26,35 +31,20 @@ jobs:
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
         
-    - name: Enable Remote Desktop (SSH)
-      run: sudo systemsetup -setremotelogin on
-      
-    - name: Configure Firewall for OpenVPN
-      run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add /usr/local/bin/openvpn
-    
-    - name: Create Local Users
+    - name: Enable Screen Sharing (VNC)
       run: |
-        sudo dscl . -create /Users/KeroAdmin
-        sudo dscl . -create /Users/KeroAdmin UserShell /bin/bash
-        sudo dscl . -create /Users/KeroAdmin RealName "Kero Admin"
-        sudo dscl . -create /Users/KeroAdmin UniqueID "510"
-        sudo dscl . -create /Users/KeroAdmin PrimaryGroupID 20
-        sudo dscl . -create /Users/KeroAdmin NFSHomeDirectory /Users/KeroAdmin
-        sudo dscl . -passwd /Users/KeroAdmin "P@ssw0rd!"
-        sudo dscl . -append /Groups/admin GroupMembership KeroAdmin
-
-        sudo dscl . -create /Users/Kero
-        sudo dscl . -create /Users/Kero UserShell /bin/bash
-        sudo dscl . -create /Users/Kero RealName "Kero"
-        sudo dscl . -create /Users/Kero UniqueID "511"
-        sudo dscl . -create /Users/Kero PrimaryGroupID 20
-        sudo dscl . -create /Users/Kero NFSHomeDirectory /Users/Kero
-        sudo dscl . -passwd /Users/Kero "P@ssw0rd!"
-        sudo dscl . -append /Groups/admin GroupMembership Kero
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 
     - name: Configure OpenVPN
-      run: sudo openvpn --config portmap.ovpn --daemon
-      
+      run: |
+        sudo openvpn --config portmap.ovpn --daemon
+
+    - name: Start noVNC Server
+      run: |
+        websockify --web=/usr/local/share/novnc 8080 localhost:5900 &
+    
     - name: Output User Credentials
       run: |
         echo "User Name: KeroAdmin"
