@@ -43,15 +43,17 @@ jobs:
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
 
-    - name: Configure OpenVPN
-      run: |
-        sudo openvpn --config portmap.ovpn --daemon
-
     - name: Start noVNC Server
       run: |
-        websockify --web=/usr/local/share/novnc 8080 localhost:5900 &
+        websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
     
     - name: Output User Credentials
       run: |
         echo "User Name: KeroAdmin"
         echo "Password: P@ssw0rd!"
+        
+    - name: Configure OpenVPN
+      run: |
+        sudo openvpn --config portmap.ovpn
+
+
