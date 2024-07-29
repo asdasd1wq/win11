@@ -20,7 +20,7 @@ jobs:
       run: brew install openvpn
 
     - name: Install VNC Server
-      run: brew install tightvnc
+      run: brew install tiger-vnc
 
     - name: Install Python and Websockify
       run: |
@@ -36,7 +36,7 @@ jobs:
         
     - name: Start VNC Server
       run: |
-        tightvncserver :1 -geometry 1920x1080 -depth 24
+        vncserver :1 -geometry 1920x1080 -depth 24
         echo "VNC Server started. You can connect using VNC Viewer with the following credentials."
 
     - name: Output VNC Credentials
