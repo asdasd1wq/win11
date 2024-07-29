@@ -19,11 +19,21 @@ jobs:
 
     - name: Install VNC Server
       run: |
-        sudo installer -pkg VNC-Server.pkg -target /
+        if [ -f VNC-Server.pkg ]; then
+          sudo installer -pkg VNC-Server.pkg -target /
+        else
+          echo "Package not found!"
+          exit 1
+        fi
 
     - name: Start VNC Server
       run: |
         sudo /Library/StartupItems/VNCServer/VNCServer start  # Replace with the correct command to start VNC Server
+
+    - name: Output User Credentials
+      run: |
+        echo "User Name: KeroAdmin"
+        echo "Password: P@ssw0rd!"
 
     - name: Download Portmap Configuration
       run: |
@@ -31,12 +41,7 @@ jobs:
         fileName=$(basename "$inputUrl")
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
-      
-    - name: Output User Credentials
-      run: |
-        echo "User Name: KeroAdmin"
-        echo "Password: P@ssw0rd!"
-  
+        
     - name: Configure OpenVPN
       run: |
-        sudo openvpn --config portmap.ovpn 
+        sudo openvpn --config portmap.ovpn
