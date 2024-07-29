@@ -1,4 +1,4 @@
-name: Setup macOS Environment with RealVNC
+name: Setup macOS Environment with VNC
 
 on:
   workflow_dispatch:
@@ -12,17 +12,18 @@ jobs:
     runs-on: macos-12
 
     steps:
-    - name: Install Homebrew
+    - name: Download VNC Server
       run: |
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        
-    - name: Install OpenVPN
-      run: brew install openvpn
+        curl -L -o "VNC-Server.pkg" "https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.10.1-MacOSX.pkg"
+        ls -l VNC-Server.pkg  # Verify the file exists
 
-    - name: Install Python and Websockify
+    - name: Install VNC Server
       run: |
-        brew install python
-        pip3 install websockify
+        sudo installer -pkg VNC-Server.pkg -target /
+
+    - name: Start VNC Server
+      run: |
+        sudo /Library/StartupItems/VNCServer/VNCServer start  # Replace with the correct command to start VNC Server
 
     - name: Download Portmap Configuration
       run: |
@@ -30,21 +31,12 @@ jobs:
         fileName=$(basename "$inputUrl")
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
-
-    - name: Install RealVNC
+      
+    - name: Output User Credentials
       run: |
-        curl -L -o "VNC-Server.pkg" "https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.10.1-MacOSX.pkg"
-        sudo installer -pkg VNC-Server.pkg -target /
-
-    - name: Start RealVNC Server
-      run: |
-        sudo /Applications/VNC\ Viewer.app/Contents/MacOS/vncserver -geometry 1920x1080 -depth 24
-
-    - name: Output VNC Credentials
-      run: |
-        echo "VNC Server User: $(whoami)"
-        echo "VNC Server Password: P@ssw0rd!"
-
+        echo "User Name: KeroAdmin"
+        echo "Password: P@ssw0rd!"
+  
     - name: Configure OpenVPN
       run: |
-        sudo openvpn --config portmap.ovpn
+        sudo openvpn --config portmap.ovpn 
