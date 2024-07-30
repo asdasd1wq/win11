@@ -1,16 +1,16 @@
-name: Setup macOS Environment with RDP
-
-on:
+name: MacRDP
+on: 
   workflow_dispatch:
     inputs:
       portmap_config_url:
-        description: 'Please paste the URL of the webpage or file you want to download:'
+        description: 'Please paste the URL of the Portmap configuration file (.ovpn):'
         required: true
 
 jobs:
-  setup:
-    runs-on: macos-12
-
+  build:
+    name: MacRDP
+    runs-on: macos-latest
+    
     steps:
     - name: Install Homebrew
       run: |
@@ -19,24 +19,29 @@ jobs:
     - name: Install OpenVPN
       run: brew install openvpn
 
-    - name: Install FreeRDP
-      run: brew install freerdp
+    - name: Install Portmap
+      run: brew install portmap
 
     - name: Download Portmap Configuration
       run: |
         inputUrl="${{ github.event.inputs.portmap_config_url }}"
-        curl -k -L -o "portmap.ovpn" "$inputUrl"
+        curl -L -o "portmap.ovpn" "$inputUrl"
 
-    - name: Output User Credentials
+    - name: Start Portmap
+      env:
+        PORTMAP_API_KEY: ${{ secrets.PORTMAP_API_KEY }}
       run: |
-        echo "User Name: $(whoami)"
-        echo "Password: P@ssw0rd!"
-        echo "RDP is set up. You can use the FreeRDP client to connect."
-
-    - name: Start FreeRDP
-      run: |
-        xfreerdp /v:localhost /u:$(whoami) /p:P@ssw0rd! /cert:ignore
+        # Start Portmap with your API key
+        portmap start --api-key "$PORTMAP_API_KEY"
 
     - name: Configure OpenVPN
       run: |
         sudo openvpn --config portmap.ovpn
+
+    - name: Log In Details To VNC Server
+      run: |
+        chmod +x login.sh
+        bash login.sh
+
+    - name: MacOS System running...
+      uses: mxschmitt/action-tmate@v2
