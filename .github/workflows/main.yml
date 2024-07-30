@@ -1,4 +1,4 @@
-name: Setup macOS Environment with AnyDesk
+name: Setup macOS Environment with RDP
 
 on:
   workflow_dispatch:
@@ -19,14 +19,11 @@ jobs:
     - name: Install OpenVPN
       run: brew install openvpn
 
-    - name: Download and Install AnyDesk
+    - name: Install xrdp and dependencies
       run: |
-        curl -L -o "AnyDesk.pkg" "https://anydesk.com/en/downloads/thank-you?dv=mac_dmg"
-        sudo installer -pkg AnyDesk.pkg -target /
-
-    - name: Start AnyDesk
-      run: |
-        open -a AnyDesk
+        brew install xquartz
+        brew tap homebrew/cask
+        brew install --cask xrdp
 
     - name: Download Portmap Configuration
       run: |
@@ -39,12 +36,14 @@ jobs:
       run: |
         sudo openvpn --config portmap.ovpn
 
-    - name: Output AnyDesk Access Details
+    - name: Start xrdp Server
       run: |
-        echo "AnyDesk is installed and started."
-        echo "You can access your machine via AnyDesk client. Please retrieve the address directly from the AnyDesk application."
+        sudo /usr/local/bin/xrdp
+        sudo /usr/local/bin/xrdp-sesman
 
     - name: Output User Credentials
       run: |
         echo "User Name: $(whoami)"
         echo "Password: P@ssw0rd!"
+        echo "RDP is installed and started. You can connect using the RDP client."
+        echo "Note: Ensure that the appropriate firewall rules allow RDP connections."
