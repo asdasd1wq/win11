@@ -19,6 +19,7 @@ jobs:
 
     - name: Install VNC Server
       run: |
+        pwd  # Print the working directory
         if [ -f VNC-Server.pkg ]; then
           echo "Package found. Installing..."
           sudo installer -pkg VNC-Server.pkg -target /
