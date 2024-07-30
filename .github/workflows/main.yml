@@ -1,4 +1,4 @@
-name: Setup macOS Environment with VNC
+name: Setup macOS Environment with noVNC
 
 on:
   workflow_dispatch:
@@ -12,35 +12,23 @@ jobs:
     runs-on: macos-12
 
     steps:
-    - name: Download VNC Server
+    - name: Install Homebrew
       run: |
-        curl -L -o "VNC-Server.pkg" "https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.10.1-MacOSX.pkg"
-        ls -l VNC-Server.pkg  # Verify the file exists
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        
+    - name: Install OpenVPN
+      run: brew install openvpn
 
-    - name: Verify Package Integrity
+    - name: Install Python and Websockify
       run: |
-        file VNC-Server.pkg
-        ls -l VNC-Server.pkg
+        brew install python
+        pip3 install websockify
 
-    - name: Install VNC Server
+    - name: Download noVNC
       run: |
-        pwd  # Print the working directory
-        if [ -f VNC-Server.pkg ]; then
-          echo "Package found. Installing..."
-          sudo installer -pkg VNC-Server.pkg -target / -verbose  # Try using the file directly
-        else
-          echo "Package not found!"
-          exit 1
-        fi
-
-    - name: Start VNC Server
-      run: |
-        sudo /Library/Application\ Support/RealVNC/VNCServer/vncserver --start  # Replace with the correct command to start VNC Server
-
-    - name: Output User Credentials
-      run: |
-        echo "User Name: KeroAdmin"
-        echo "Password: P@ssw0rd!"
+        git clone https://github.com/noVNC/noVNC.git /usr/local/share/novnc
+        cd /usr/local/share/novnc
+        git submodule update --init --recursive
 
     - name: Download Portmap Configuration
       run: |
@@ -48,7 +36,23 @@ jobs:
         fileName=$(basename "$inputUrl")
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
+
+    - name: Enable Screen Sharing (VNC)
+      run: |
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
+
+    - name: Start noVNC Server
+      run: |
+        websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
+
+    - name: Output User Credentials
+      run: |
+        echo "User Name: KeroAdmin"
+        echo "Password: P@ssw0rd!"
         
     - name: Configure OpenVPN
       run: |
         sudo openvpn --config portmap.ovpn
+
