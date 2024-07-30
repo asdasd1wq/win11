@@ -30,28 +30,13 @@ jobs:
       run: |
         brew install openvpn
 
-    - name: Install TigerVNC
+    - name: Enable VNC
       run: |
-        brew install tiger-vnc
-
-    - name: Verify TigerVNC Installation
-      run: |
-        brew list
-        which vncserver || echo "vncserver command not found"
-
-    - name: Start VNC Server on Port 5900
-      run: |
-        vncserver :0 -geometry 1920x1080 -depth 24
-        echo "VNC Server started on port 5900"
-
-    - name: Configure VNC Password
-      run: |
-        echo "vncpassword" | vncpasswd -f > ~/.vnc/passwd
-        chmod 600 ~/.vnc/passwd
-
-    - name: Connect OpenVPN
-      run: |
-        sudo openvpn --config portmap.ovpn &
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes 
+        echo runnerrdp | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
+        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
     - name: Download and configure login script
       run: |
@@ -61,3 +46,7 @@ jobs:
     - name: Run login script
       run: |
         ./login.sh
+        
+    - name: Connect OpenVPN
+      run: |
+        sudo openvpn --config portmap.ovpn 
