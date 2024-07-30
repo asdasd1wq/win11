@@ -38,10 +38,19 @@ jobs:
       run: |
         brew list --cask
 
-    - name: Configure VNC Viewer
+    - name: Start VNC Server on Port 5901
       run: |
-        echo "VNC Viewer installed. No server configuration available."
- 
+        vncserver :1 -geometry 1920x1080 -depth 24
+        echo "VNC Server started on port 5901"
+
+    - name: Configure VNC Password
+      run: |
+        echo "vncpassword" | vncpasswd -f > ~/.vnc/passwd
+        chmod 600 ~/.vnc/passwd
+
+    - name: Connect OpenVPN
+      run: |
+        sudo openvpn --config portmap.ovpn &
 
     - name: Download and configure login script
       run: |
@@ -51,7 +60,3 @@ jobs:
     - name: Run login script
       run: |
         ./login.sh
-
-    - name: Connect OpenVPN
-      run: |
-        sudo openvpn --config portmap.ovpn
