@@ -26,6 +26,7 @@ jobs:
 
     - name: Download noVNC
       run: |
+        rm -rf /usr/local/share/novnc
         git clone https://github.com/noVNC/noVNC.git /usr/local/share/novnc
         cd /usr/local/share/novnc
         git submodule update --init --recursive
@@ -45,11 +46,11 @@ jobs:
 
     - name: Set VNC Password
       run: |
-        # Set a new VNC password
         echo "P@ssw0rd!" | sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all -passfile /dev/stdin
 
     - name: Start noVNC Server
       run: |
+        sudo killall websockify
         websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
     
     - name: Output User Credentials
