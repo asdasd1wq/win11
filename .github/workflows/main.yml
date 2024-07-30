@@ -50,8 +50,12 @@ jobs:
 
     - name: Start noVNC Server
       run: |
-        sudo killall websockify
-        websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
+        if pgrep -x "websockify" > /dev/null; then
+          echo "websockify is already running."
+        else
+          echo "Starting websockify..."
+          websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
+        fi
     
     - name: Output User Credentials
       run: |
