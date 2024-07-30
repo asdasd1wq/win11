@@ -22,7 +22,7 @@ jobs:
         pwd  # Print the working directory
         if [ -f VNC-Server.pkg ]; then
           echo "Package found. Installing..."
-          sudo installer -pkg VNC-Server.pkg -target /
+          sudo installer -pkg $(pwd)/VNC-Server.pkg -target / -verbose  # Use the full path and verbose mode
         else
           echo "Package not found!"
           exit 1
