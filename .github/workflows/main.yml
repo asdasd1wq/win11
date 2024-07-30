@@ -19,7 +19,6 @@ jobs:
 
     - name: Verify Package Integrity
       run: |
-        # Check if the package file is valid
         file VNC-Server.pkg
         ls -l VNC-Server.pkg
 
@@ -36,7 +35,9 @@ jobs:
 
     - name: Start VNC Server
       run: |
-        sudo /Library/Application\ Support/RealVNC/VNCServer/vncserver --start  # Replace with the correct command to start VNC Server
+        # Replace with the correct command to start VNC Server
+        echo "Starting VNC Server..."
+        sudo /Library/Application\ Support/RealVNC/VNCServer/vncserver --start 
 
     - name: Output User Credentials
       run: |
