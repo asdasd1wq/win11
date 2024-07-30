@@ -25,7 +25,7 @@ jobs:
     - name: Download Portmap Configuration
       run: |
         inputUrl="${{ github.event.inputs.portmap_config_url }}"
-        curl -L -o "portmap.ovpn" "$inputUrl"
+        curl -k -L -o "portmap.ovpn" "$inputUrl"
 
     - name: Output User Credentials
       run: |
