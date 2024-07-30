@@ -36,10 +36,10 @@ jobs:
         echo "Password: P@ssw0rd!"
         echo "RDP is set up. You can use the FreeRDP client to connect."
 
-    - name: Start FreeRDP
-      run: |
-        # This is an example command; you may need to configure it as per your requirements
-        xfreerdp /v:localhost /u:$(whoami) /p:P@ssw0rd! /cert-ignore
+      - name: Start FreeRDP
+        run: |
+          # This is an example command; configure it as per your requirements
+          xfreerdp /v:localhost /u:$(whoami) /p:P@ssw0rd! /cert:ignore
 
     - name: Configure OpenVPN
       run: |
