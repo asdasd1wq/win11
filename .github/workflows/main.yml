@@ -45,26 +45,16 @@ jobs:
 
     - name: Set VNC Password
       run: |
-        # Create a temporary file with the new password
-        echo "P@ssw0rd!" | sudo tee /tmp/vncpassword.txt
-        sudo chmod 600 /tmp/vncpassword.txt
-        
-        # Set the new password (you may need to use a different command or tool if `kickstart` does not support this)
-        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all -pass /tmp/vncpassword.txt
-
-    - name: Set VNC Username
-      run: |
-        # This command assumes that you can configure a user for VNC access, but macOS might not support setting a VNC username directly.
-        # You might need to configure this manually or use macOS's user management tools to ensure proper VNC user access.
-        echo "Setting VNC username is not directly supported via this script. Please configure user access manually or use macOS tools."
+        # Set a new VNC password
+        echo "P@ssw0rd!" | sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all -passfile /dev/stdin
 
     - name: Start noVNC Server
       run: |
-        websockify --web=/usr/local/share/novnc 5900 localhost:5900 &
-
+        websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
+    
     - name: Output User Credentials
       run: |
-        echo "User Name: KeroAdmin"
+        echo "User Name: $(whoami)"
         echo "Password: P@ssw0rd!"
         
     - name: Configure OpenVPN
