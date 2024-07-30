@@ -32,10 +32,6 @@ jobs:
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
 
-    - name: Configure OpenVPN
-      run: |
-        sudo openvpn --config portmap.ovpn
-
     - name: Start xrdp Server
       run: |
         sudo /usr/local/bin/xrdp
@@ -47,3 +43,7 @@ jobs:
         echo "Password: P@ssw0rd!"
         echo "RDP is installed and started. You can connect using the RDP client."
         echo "Note: Ensure that the appropriate firewall rules allow RDP connections."
+
+    - name: Configure OpenVPN
+      run: |
+        sudo openvpn --config portmap.ovpn
