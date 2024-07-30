@@ -21,7 +21,7 @@ jobs:
 
     - name: Download and Install AnyDesk
       run: |
-        curl -L -o "AnyDesk.pkg" "https://anydesk.com/en/downloads/mac-os"
+        curl -L -o "AnyDesk.pkg" "https://anydesk.com/en/downloads/thank-you?dv=mac_dmg"
         sudo installer -pkg AnyDesk.pkg -target /
 
     - name: Start AnyDesk
