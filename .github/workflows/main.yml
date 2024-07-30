@@ -1,4 +1,4 @@
-name: Setup macOS Environment with noVNC
+name: Setup macOS Environment with AnyDesk
 
 on:
   workflow_dispatch:
@@ -19,17 +19,14 @@ jobs:
     - name: Install OpenVPN
       run: brew install openvpn
 
-    - name: Install Python and Websockify
+    - name: Download and Install AnyDesk
       run: |
-        brew install python
-        pip3 install websockify
+        curl -L -o "AnyDesk.pkg" "https://anydesk.com/en/downloads/mac-os"
+        sudo installer -pkg AnyDesk.pkg -target /
 
-    - name: Download noVNC
+    - name: Start AnyDesk
       run: |
-        rm -rf /usr/local/share/novnc
-        git clone https://github.com/noVNC/noVNC.git /usr/local/share/novnc
-        cd /usr/local/share/novnc
-        git submodule update --init --recursive
+        open -a AnyDesk
 
     - name: Download Portmap Configuration
       run: |
@@ -38,30 +35,16 @@ jobs:
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
 
-    - name: Enable Screen Sharing (VNC)
+    - name: Configure OpenVPN
       run: |
-        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
-        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all
-        sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
+        sudo openvpn --config portmap.ovpn
 
-    - name: Set VNC Password
+    - name: Output AnyDesk Access Details
       run: |
-        echo "P@ssw0rd!" | sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -access -on -users $(whoami) -privs -all -passfile /dev/stdin
+        echo "AnyDesk is installed and started."
+        echo "You can access your machine via AnyDesk client. Please retrieve the address directly from the AnyDesk application."
 
-    - name: Start noVNC Server
-      run: |
-        if pgrep -x "websockify" > /dev/null; then
-          echo "websockify is already running."
-        else
-          echo "Starting websockify..."
-          websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
-        fi
-    
     - name: Output User Credentials
       run: |
         echo "User Name: $(whoami)"
         echo "Password: P@ssw0rd!"
-        
-    - name: Configure OpenVPN
-      run: |
-        sudo openvpn --config portmap.ovpn
