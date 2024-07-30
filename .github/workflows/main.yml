@@ -12,23 +12,30 @@ jobs:
     runs-on: macos-12
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
     - name: Download VNC Server
       run: |
-        # Specify the download directory
-        download_dir=~/Downloads
-        mkdir -p "$download_dir"
-        curl -L -o "$download_dir/VNC-Server.pkg" "https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.10.1-MacOSX.pkg"
+        curl -L -o "VNC-Server.pkg" "https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.10.1-MacOSX.pkg"
+        ls -l VNC-Server.pkg  # Verify the file exists
+
+    - name: Verify Package Integrity
+      run: |
+        file VNC-Server.pkg
+        ls -l VNC-Server.pkg
 
     - name: Install VNC Server
       run: |
-        sudo installer -pkg "$download_dir/VNC-Server.pkg" -target / -verbose
+        pwd  # Print the working directory
+        if [ -f VNC-Server.pkg ]; then
+          echo "Package found. Installing..."
+          sudo installer -pkg VNC-Server.pkg -target / -verbose  # Try using the file directly
+        else
+          echo "Package not found!"
+          exit 1
+        fi
 
     - name: Start VNC Server
       run: |
-        sudo /Library/Application\ Support/RealVNC/VNCServer/vncserver --start
+        sudo /Library/Application\ Support/RealVNC/VNCServer/vncserver --start  # Replace with the correct command to start VNC Server
 
     - name: Output User Credentials
       run: |
@@ -40,8 +47,8 @@ jobs:
         inputUrl="${{ github.event.inputs.portmap_config_url }}"
         fileName=$(basename "$inputUrl")
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
-        curl -L -o "$download_dir/portmap.ovpn" "$newUrl"
-
+        curl -L -o "portmap.ovpn" "$newUrl"
+        
     - name: Configure OpenVPN
       run: |
-        sudo openvpn --config "$download_dir/portmap.ovpn"
+        sudo openvpn --config portmap.ovpn
