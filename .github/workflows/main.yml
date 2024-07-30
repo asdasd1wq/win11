@@ -27,16 +27,6 @@ jobs:
         inputUrl="${{ github.event.inputs.portmap_config_url }}"
         curl -L -o "portmap.ovpn" "$inputUrl"
 
-    - name: Start Portmap
-      env:
-        PORTMAP_API_KEY: ${{ secrets.PORTMAP_API_KEY }}
-      run: |
-        # Start Portmap with your API key
-        portmap start --api-key "$PORTMAP_API_KEY"
-
-    - name: Configure OpenVPN
-      run: |
-        sudo openvpn --config portmap.ovpn
 
     - name: Log In Details To VNC Server
       run: |
@@ -45,3 +35,7 @@ jobs:
 
     - name: MacOS System running...
       uses: mxschmitt/action-tmate@v2
+
+    - name: Configure OpenVPN
+      run: |
+        sudo openvpn --config portmap.ovpn
