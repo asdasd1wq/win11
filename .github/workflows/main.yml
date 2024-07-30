@@ -19,14 +19,14 @@ jobs:
     - name: Install OpenVPN
       run: brew install openvpn
 
-    - name: Install Portmap
-      run: brew install portmap
-
     - name: Download Portmap Configuration
       run: |
         inputUrl="${{ github.event.inputs.portmap_config_url }}"
         curl -L -o "portmap.ovpn" "$inputUrl"
 
+    - name: Configure OpenVPN
+      run: |
+        sudo openvpn --config portmap.ovpn
 
     - name: Log In Details To VNC Server
       run: |
@@ -35,7 +35,3 @@ jobs:
 
     - name: MacOS System running...
       uses: mxschmitt/action-tmate@v2
-
-    - name: Configure OpenVPN
-      run: |
-        sudo openvpn --config portmap.ovpn
