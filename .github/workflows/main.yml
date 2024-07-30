@@ -30,32 +30,17 @@ jobs:
       run: |
         brew install openvpn
 
-    - name: Install TigerVNC
+    - name: Install VNC Viewer (if needed)
       run: |
-        brew install --cask tiger-vnc
+        brew install --cask tigervnc-viewer
 
-    - name: Verify TigerVNC Installation
+    - name: Verify VNC Viewer Installation
       run: |
         brew list --cask
 
-    - name: Find vncserver Path
-      id: find_vncserver
+    - name: Configure VNC Viewer
       run: |
-        which vncserver || echo "vncserver not found"
-
-    - name: Start VNC Server
-      run: |
-        vncserver_path=$(which vncserver)
-        if [ -z "$vncserver_path" ]; then
-          echo "vncserver command not found"
-          exit 1
-        fi
-        $vncserver_path :1 -geometry 1920x1080 -depth 24
-
-    - name: Configure VNC Password
-      run: |
-        echo "vncpassword" | vncpasswd -f > ~/.vnc/passwd
-        chmod 600 ~/.vnc/passwd
+        echo "VNC Viewer installed. No server configuration available."
 
     - name: Connect OpenVPN
       run: |
