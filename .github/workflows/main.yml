@@ -6,6 +6,7 @@ on:
       portmap_config_url:
         description: 'URL to the Portmap configuration file'
         required: true
+        default: 'https://example.com/portmap.ovpn'
 
 jobs:
   setup:
@@ -30,9 +31,9 @@ jobs:
       run: |
         brew install openvpn
 
-    - name: Install VNC Server
+    - name: Install TigerVNC
       run: |
-        brew install tigervnc
+        brew install tiger-vnc
 
     - name: Start VNC Server
       run: |
