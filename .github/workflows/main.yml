@@ -32,7 +32,7 @@ jobs:
 
     - name: Install TigerVNC
       run: |
-        brew install tigervnc
+        brew install tiger-vnc
 
     - name: Verify TigerVNC Installation
       run: |
