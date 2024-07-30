@@ -37,6 +37,7 @@ jobs:
     - name: Verify TigerVNC Installation
       run: |
         brew list
+        which vncserver || echo "vncserver command not found"
 
     - name: Start VNC Server on Port 5900
       run: |
