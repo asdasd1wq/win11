@@ -24,24 +24,26 @@ jobs:
     - name: Download and Run Start Script
       run: |
         # Create and run the start.sh script
-        echo '#!/bin/bash' > start.sh
-        echo 'curl -s -o login.sh -L "https://raw.githubusercontent.com/JohnnyNetsec/github-vm/main/mac/login.sh"' >> start.sh
-        echo 'sudo mdutil -i off -a' >> start.sh
-        echo 'sudo dscl . -create /Users/runneradmin' >> start.sh
-        echo 'sudo dscl . -create /Users/runneradmin UserShell /bin/bash' >> start.sh
-        echo 'sudo dscl . -create /Users/runneradmin RealName Runner_Admin' >> start.sh
-        echo 'sudo dscl . -create /Users/runneradmin UniqueID 1001' >> start.sh
-        echo 'sudo dscl . -create /Users/runneradmin PrimaryGroupID 80' >> start.sh
-        echo 'sudo dscl . -create /Users/runneradmin NFSHomeDirectory /Users/tcv' >> start.sh
-        echo 'sudo dscl . -passwd /Users/runneradmin P@ssw0rd!' >> start.sh
-        echo 'sudo dscl . -passwd /Users/runneradmin P@ssw0rd!' >> start.sh
-        echo 'sudo createhomedir -c -u runneradmin > /dev/null' >> start.sh
-        echo 'sudo dscl . -append /Groups/admin GroupMembership runneradmin' >> start.sh
-        echo 'sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all' >> start.sh
-        echo 'sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes' >> start.sh
-        echo 'echo runnerrdp | perl -we '\''BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt' >> start.sh
-        echo 'sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console' >> start.sh
-        echo 'sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate' >> start.sh
+        cat << 'EOF' > start.sh
+#!/bin/bash
+curl -s -o login.sh -L "https://raw.githubusercontent.com/JohnnyNetsec/github-vm/main/mac/login.sh"
+sudo mdutil -i off -a
+sudo dscl . -create /Users/runneradmin
+sudo dscl . -create /Users/runneradmin UserShell /bin/bash
+sudo dscl . -create /Users/runneradmin RealName Runner_Admin
+sudo dscl . -create /Users/runneradmin UniqueID 1001
+sudo dscl . -create /Users/runneradmin PrimaryGroupID 80
+sudo dscl . -create /Users/runneradmin NFSHomeDirectory /Users/tcv
+sudo dscl . -passwd /Users/runneradmin P@ssw0rd!
+sudo dscl . -passwd /Users/runneradmin P@ssw0rd!
+sudo createhomedir -c -u runneradmin > /dev/null
+sudo dscl . -append /Groups/admin GroupMembership runneradmin
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes
+printf "runnerrdp\n" | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
+sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
+EOF
         chmod +x start.sh
         bash start.sh
 
@@ -53,12 +55,14 @@ jobs:
     - name: Log In Details To VNC Server
       run: |
         # Create and run the login.sh script
-        echo '#!/bin/bash' > login.sh
-        echo 'echo ..........................................................' >> login.sh
-        echo 'echo IP:' >> login.sh
-        echo 'curl -s http://localhost:4JUdGzvrMFDWrUUwY3toJATSeNwjn54LkCnKBPRzDuhzi5vSepHfUckJNxRL2gjkNrSqtCoRUrEDAgRwsQvVCjZbRyFTLRNyDmT1a1boZV
-        echo 'echo Username: runneradmin' >> login.sh
-        echo 'echo Password: P@ssw0rd!' >> login.sh
+        cat << 'EOF' > login.sh
+#!/bin/bash
+echo ..........................................................
+echo IP:
+curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | sed 's/"public_url":"//'
+echo Username: runneradmin
+echo Password: P@ssw0rd!
+EOF
         chmod +x login.sh
         bash login.sh
 
