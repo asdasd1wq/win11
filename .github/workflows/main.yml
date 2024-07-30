@@ -30,11 +30,27 @@ jobs:
       run: |
         brew install openvpn
 
-    - name: Enable VNC
+    - name: Enable VNC and Create User
       run: |
+        # Enable VNC
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -allowAccessFor -allUsers -privs -all
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -clientopts -setvnclegacy -vnclegacy yes 
-        echo runnerrdp | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
+        
+        # Set VNC password
+        echo "P@ssw0rd!" | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt
+
+        # Create new user 'koko'
+        sudo dscl . -create /Users/koko
+        sudo dscl . -create /Users/koko UserShell /bin/bash
+        sudo dscl . -create /Users/koko RealName "Runner Admin"
+        sudo dscl . -create /Users/koko UniqueID 1001
+        sudo dscl . -create /Users/koko PrimaryGroupID 80
+        sudo dscl . -create /Users/koko NFSHomeDirectory /Users/koko
+        sudo dscl . -passwd /Users/koko P@ssw0rd!
+        sudo createhomedir -c -u koko > /dev/null
+        sudo dscl . -append /Groups/admin GroupMembership koko
+
+        # Start VNC/reset changes
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -restart -agent -console
         sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
@@ -50,3 +66,4 @@ jobs:
     - name: Connect OpenVPN
       run: |
         sudo openvpn --config portmap.ovpn 
+
