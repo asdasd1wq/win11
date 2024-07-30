@@ -29,7 +29,7 @@ jobs:
 
     - name: Start VNC Server
       run: |
-        sudo /Library/StartupItems/VNCServer/VNCServer start  # Replace with the correct command to start VNC Server
+        sudo /Library/Application\ Support/RealVNC/VNCServer/vncserver --start  # Replace with the correct command to start VNC Server
 
     - name: Output User Credentials
       run: |
