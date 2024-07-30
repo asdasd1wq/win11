@@ -20,15 +20,12 @@ jobs:
       run: brew install openvpn
 
     - name: Install FreeRDP
-      run: |
-        brew install freerdp
+      run: brew install freerdp
 
     - name: Download Portmap Configuration
       run: |
         inputUrl="${{ github.event.inputs.portmap_config_url }}"
-        fileName=$(basename "$inputUrl")
-        newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
-        curl -L -o "portmap.ovpn" "$newUrl"
+        curl -L -o "portmap.ovpn" "$inputUrl"
 
     - name: Output User Credentials
       run: |
@@ -36,10 +33,9 @@ jobs:
         echo "Password: P@ssw0rd!"
         echo "RDP is set up. You can use the FreeRDP client to connect."
 
-      - name: Start FreeRDP
-        run: |
-          # This is an example command; configure it as per your requirements
-          xfreerdp /v:localhost /u:$(whoami) /p:P@ssw0rd! /cert:ignore
+    - name: Start FreeRDP
+      run: |
+        xfreerdp /v:localhost /u:$(whoami) /p:P@ssw0rd! /cert:ignore
 
     - name: Configure OpenVPN
       run: |
