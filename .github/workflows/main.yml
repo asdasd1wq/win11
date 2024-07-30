@@ -30,18 +30,18 @@ jobs:
       run: |
         brew install openvpn
 
-    - name: Install VNC Viewer (if needed)
+    - name: Install TigerVNC
       run: |
-        brew install --cask tigervnc-viewer
+        brew install tigervnc
 
-    - name: Verify VNC Viewer Installation
+    - name: Verify TigerVNC Installation
       run: |
-        brew list --cask
+        brew list
 
-    - name: Start VNC Server on Port 5901
+    - name: Start VNC Server on Port 5900
       run: |
-        vncserver :1 -geometry 1920x1080 -depth 24
-        echo "VNC Server started on port 5901"
+        vncserver :0 -geometry 1920x1080 -depth 24
+        echo "VNC Server started on port 5900"
 
     - name: Configure VNC Password
       run: |
