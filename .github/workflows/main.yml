@@ -17,6 +17,12 @@ jobs:
         curl -L -o "VNC-Server.pkg" "https://www.realvnc.com/download/file/vnc.files/VNC-Server-6.10.1-MacOSX.pkg"
         ls -l VNC-Server.pkg  # Verify the file exists
 
+    - name: Verify Package Integrity
+      run: |
+        # Check if the package file is valid
+        file VNC-Server.pkg
+        ls -l VNC-Server.pkg
+
     - name: Install VNC Server
       run: |
         pwd  # Print the working directory
