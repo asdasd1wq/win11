@@ -45,7 +45,7 @@ jobs:
 
     - name: Start noVNC Server
       run: |
-        websockify --web=/usr/local/share/novnc 4000 localhost:5900 &
+        websockify --web=/usr/local/share/novnc 5900 localhost:5900 &
 
     - name: Output User Credentials
       run: |
@@ -55,4 +55,3 @@ jobs:
     - name: Configure OpenVPN
       run: |
         sudo openvpn --config portmap.ovpn
-
