@@ -19,11 +19,9 @@ jobs:
     - name: Install OpenVPN
       run: brew install openvpn
 
-    - name: Install xrdp and dependencies
+    - name: Install FreeRDP
       run: |
-        brew install xquartz
-        brew tap homebrew/cask
-        brew install --cask xrdp
+        brew install freerdp
 
     - name: Download Portmap Configuration
       run: |
@@ -32,17 +30,16 @@ jobs:
         newUrl="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/$fileName"
         curl -L -o "portmap.ovpn" "$newUrl"
 
-    - name: Start xrdp Server
-      run: |
-        sudo /usr/local/bin/xrdp
-        sudo /usr/local/bin/xrdp-sesman
-
     - name: Output User Credentials
       run: |
         echo "User Name: $(whoami)"
         echo "Password: P@ssw0rd!"
-        echo "RDP is installed and started. You can connect using the RDP client."
-        echo "Note: Ensure that the appropriate firewall rules allow RDP connections."
+        echo "RDP is set up. You can use the FreeRDP client to connect."
+
+    - name: Start FreeRDP
+      run: |
+        # This is an example command; you may need to configure it as per your requirements
+        xfreerdp /v:localhost /u:$(whoami) /p:P@ssw0rd! /cert-ignore
 
     - name: Configure OpenVPN
       run: |
