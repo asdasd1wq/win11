@@ -41,16 +41,6 @@ jobs:
           additional_yml_url="${{ github.event.inputs.additional_yml_url }}"
           echo "Downloading additional YAML file from $additional_yml_url..."
           wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional.yml"
-
-          if [ $? -ne 0 ]; then
-              echo "Error: Failed to download additional YAML file from $additional_yml_url."
-              exit 1
-          fi
-
-          echo "Additional YAML file downloaded successfully."
-
-          echo "Executing additional YAML file..."
-          # Assuming the additional YAML file is a shell script or similar executable
           chmod +x "$GITHUB_WORKSPACE/additional.yml"
           "$GITHUB_WORKSPACE/additional.yml"
           
