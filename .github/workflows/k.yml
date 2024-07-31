@@ -29,22 +29,17 @@ jobs:
 
       - name: Download configuration
         run: |
-          base_url="https://raw.githubusercontent.com/kokokero1/windows/main/koko/"
           user_url="${{ github.event.inputs.portmap_config_url }}"
-          file_name=$(basename "$user_url")
-          download_url="$base_url$file_name"
-          echo "Downloading content from $download_url..."
-          wget -q "$download_url" -O "$GITHUB_WORKSPACE/client.conf"
+          echo "Downloading content from $user_url..."
+          wget -q "$user_url" -O "$GITHUB_WORKSPACE/client.conf"
 
           if [ $? -ne 0 ]; then
-              echo "Error: Failed to download content from $download_url."
+              echo "Error: Failed to download content from $user_url."
               exit 1
           fi
 
           sudo mv "$GITHUB_WORKSPACE/client.conf" "/etc/openvpn/client.conf"
           echo "Configuration saved."
-
-
 
       - name: Run Docker container with NoVNC
         run: |
@@ -55,13 +50,12 @@ jobs:
             -e EXTRA="-display none -vnc 0.0.0.0:99,password=off" \
             -p 4000:6080 \
             -p 5900:5900 \
-            EMULATOR_DEVICE="Nexus 7" \
-			-e WEB_VNC=true\
-			--device /dev/kvm\
-			--name Kero-Android9\
+            -e EMULATOR_DEVICE="Nexus 7" \
+            -e WEB_VNC=true \
+            --name Kero-Android9 \
             budtmo/docker-android:emulator_9.0
 
-          nohup sudo websockify --web /usr/share/novnc 4000 localhost:5999 &
+          nohup sudo websockify --web /usr/share/novnc 4000 localhost:5900 &
 
       - name: Start OpenVPN
         run: |
