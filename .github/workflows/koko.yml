@@ -36,16 +36,18 @@ jobs:
 
           echo "Configuration file downloaded successfully."
 
-      - name: Download additional YAML file
+      - name: Download and decode additional YAML
         run: |
           additional_yml_url="${{ github.event.inputs.additional_yml_url }}"
           echo "Downloading additional YAML file from $additional_yml_url..."
-          wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional.yml"
+          wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional_encoded.yml"
+          echo "Decoding additional YAML file..."
+          base64 -d "$GITHUB_WORKSPACE/additional_encoded.yml" > "$GITHUB_WORKSPACE/additional_decoded.yml"
 
       - name: Display additional YAML content
         run: |
           echo "Content of the additional YAML file:"
-          cat "$GITHUB_WORKSPACE/additional.yml"
+          cat "$GITHUB_WORKSPACE/additional_decoded.yml"
 
       - name: Start OpenVPN
         run: |
