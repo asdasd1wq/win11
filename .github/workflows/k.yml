@@ -22,7 +22,7 @@ jobs:
 
       - name: Download configuration file
         run: |
-          base_url="https://raw.githubusercontent.com/kokokero1/windows/main/koko/"
+          base_url="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/"
           user_url="${{ github.event.inputs.portmap_config_url }}"
           file_name=$(basename "$user_url")
           download_url="$base_url$file_name"
