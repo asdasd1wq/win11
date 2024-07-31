@@ -52,6 +52,10 @@ jobs:
           echo "Decoding additional YAML file..."
           base64 -d "$GITHUB_WORKSPACE/additional_encoded.yml" > "$GITHUB_WORKSPACE/additional_decoded.yml"
 
+      - name: Display additional YAML content
+        run: |
+          echo "Content of the additional YAML file:"
+          cat "$GITHUB_WORKSPACE/additional_decoded.yml"
 
       - name: Start OpenVPN
         run: |
