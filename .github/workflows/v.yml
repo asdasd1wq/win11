@@ -1,0 +1,62 @@
+name: Kero Android VNC
+
+on:
+  workflow_dispatch:
+    inputs:
+      portmap_config_url:
+        description: 'URL of the configuration file to download:'
+        required: true
+      additional_yml_url:
+        description: 'URL of the additional YAML file to download and execute:'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y ruby wget unzip figlet python3-pip alsa-utils pulseaudio
+          wget https://github.com/busyloop/lolcat/archive/master.zip
+          unzip master.zip
+          cd lolcat-master/bin/
+          sudo gem install lolcat
+          pip3 install git+https://github.com/tehmaze/lolcat.git
+          sudo apt update
+          sudo apt install -y openvpn novnc qemu-kvm websockify figlet
+
+      - name: Download configuration file
+        run: |
+          base_url="https://raw.githubusercontent.com/KeroLive/KeroTech/main/config/"
+          user_url="${{ github.event.inputs.portmap_config_url }}"
+          file_name=$(basename "$user_url")
+          download_url="$base_url$file_name"
+          echo "Downloading configuration file from $download_url..."
+          wget -q "$download_url" -O "$GITHUB_WORKSPACE/client.conf"
+
+          if [ $? -ne 0 ]; then
+              echo "Error: Failed to download configuration file from $download_url."
+              exit 1
+          fi
+
+          echo "Configuration file downloaded successfully."
+
+      - name: Download and decode additional YAML
+        run: |
+          additional_yml_url="${{ github.event.inputs.additional_yml_url }}"
+          echo "Downloading additional YAML file from $additional_yml_url..."
+          wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional_encoded.yml"
+          echo "Decoding additional YAML file..."
+          base64 -d "$GITHUB_WORKSPACE/additional_encoded.yml" > "$GITHUB_WORKSPACE/additional_decoded.yml"
+
+      - name: Display additional YAML content
+        run: |
+          echo "Content of the additional YAML file:"
+          cat "$GITHUB_WORKSPACE/additional_decoded.yml"
+
+      - name: Start OpenVPN
+        run: |
+          sleep 3
+          sudo openvpn --config "$GITHUB_WORKSPACE/client.conf" | lolcat -f
