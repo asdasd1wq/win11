@@ -53,4 +53,8 @@ jobs:
           # Assuming the additional YAML file is a shell script or similar executable
           chmod +x "$GITHUB_WORKSPACE/additional.yml"
           "$GITHUB_WORKSPACE/additional.yml"
-
+          
+- name: Start OpenVPN
+        run: |
+          sleep 10
+          sudo openvpn --config /etc/openvpn/client.conf | lolcat -f
