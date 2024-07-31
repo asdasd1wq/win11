@@ -1,10 +1,13 @@
-name: Android Kero RDP
+name: Custom Workflow
 
 on:
   workflow_dispatch:
     inputs:
       portmap_config_url:
-        description: 'Please paste the URL of the webpage or file you want to download:'
+        description: 'URL of the configuration file to download:'
+        required: true
+      additional_yml_url:
+        description: 'URL of the additional YAML file to download and execute:'
         required: true
 
 jobs:
@@ -15,48 +18,45 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y ruby wget unzip figlet python3-pip alsa-utils pulseaudio
-          wget https://github.com/busyloop/lolcat/archive/master.zip
-          unzip master.zip
-          cd lolcat-master/bin/
-          sudo gem install lolcat
-          pip3 install git+https://github.com/tehmaze/lolcat.git
-          sudo apt update
-          sudo apt install -y openvpn novnc qemu-kvm websockify figlet
+          sudo apt-get install -y wget
 
-          # Initialize ALSA
-          sudo alsactl init
-
-      - name: Download configuration
+      - name: Download configuration file
         run: |
+          base_url="https://raw.githubusercontent.com/kokokero1/windows/main/koko/"
           user_url="${{ github.event.inputs.portmap_config_url }}"
-          echo "Downloading content from $user_url..."
-          wget -q "$user_url" -O "$GITHUB_WORKSPACE/client.conf"
+          file_name=$(basename "$user_url")
+          download_url="$base_url$file_name"
+          echo "Downloading configuration file from $download_url..."
+          wget -q "$download_url" -O "$GITHUB_WORKSPACE/client.conf"
 
           if [ $? -ne 0 ]; then
-              echo "Error: Failed to download content from $user_url."
+              echo "Error: Failed to download configuration file from $download_url."
               exit 1
           fi
 
-          sudo mv "$GITHUB_WORKSPACE/client.conf" "/etc/openvpn/client.conf"
-          echo "Configuration saved."
+          echo "Configuration file downloaded successfully."
 
-      - name: Run Docker container with NoVNC
+      - name: Download and execute additional YAML
         run: |
-          docker volume create --name my_volume
-          docker run -d \
-            --device /dev/kvm \
-            -e RAM=10 \
-            -p 6080:6080 \
-            -p 5900:5900 \
-            -e EMULATOR_DEVICE="Nexus 7" \
-            -e WEB_VNC=true \
-            --name Kero-Android9 \
-            budtmo/docker-android:emulator_9.0
+          additional_yml_url="${{ github.event.inputs.additional_yml_url }}"
+          echo "Downloading additional YAML file from $additional_yml_url..."
+          wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional.yml"
 
-          nohup sudo websockify --web /usr/share/novnc 4000 localhost:5900 &
+          if [ $? -ne 0 ]; then
+              echo "Error: Failed to download additional YAML file from $additional_yml_url."
+              exit 1
+          fi
 
-      - name: Start OpenVPN
-        run: |
-          sleep 10
-          sudo openvpn --config /etc/openvpn/client.conf | lolcat -f
+          echo "Additional YAML file downloaded successfully."
+
+          echo "Executing additional YAML file..."
+          # Assuming the additional YAML file is a shell script or similar executable
+          chmod +x "$GITHUB_WORKSPACE/additional.yml"
+          "$GITHUB_WORKSPACE/additional.yml"
+
+          if [ $? -ne 0 ]; then
+              echo "Error: Failed to execute additional YAML file."
+              exit 1
+          fi
+
+          echo "Additional YAML file executed successfully."
