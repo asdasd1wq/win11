@@ -54,9 +54,3 @@ jobs:
           chmod +x "$GITHUB_WORKSPACE/additional.yml"
           "$GITHUB_WORKSPACE/additional.yml"
 
-          if [ $? -ne 0 ]; then
-              echo "Error: Failed to execute additional YAML file."
-              exit 1
-          fi
-
-          echo "Additional YAML file executed successfully."
