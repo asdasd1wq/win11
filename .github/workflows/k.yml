@@ -47,8 +47,7 @@ jobs:
           docker run -d \
             --device /dev/kvm \
             -e RAM=10 \
-            -e EXTRA="-display none -vnc 0.0.0.0:99,password=off" \
-            -p 4000:6080 \
+            -p 6080:6080 \
             -p 5900:5900 \
             -e EMULATOR_DEVICE="Nexus 7" \
             -e WEB_VNC=true \
