@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y wget openvpn base64
+          sudo apt install -y wget openvpn base64
 
       - name: Download configuration file
         run: |
