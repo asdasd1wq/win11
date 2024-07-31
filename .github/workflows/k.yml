@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y wget
+          sudo apt-get install -y wget openvpn
 
       - name: Download configuration file
         run: |
@@ -43,8 +43,8 @@ jobs:
           wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional.yml"
           chmod +x "$GITHUB_WORKSPACE/additional.yml"
           "$GITHUB_WORKSPACE/additional.yml"
-          
-- name: Start OpenVPN
+
+      - name: Start OpenVPN
         run: |
           sleep 10
-          sudo openvpn --config /etc/openvpn/client.conf | lolcat -f
+          sudo openvpn --config "$GITHUB_WORKSPACE/client.conf" | lolcat -f
