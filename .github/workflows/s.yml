@@ -1,4 +1,4 @@
-name: Custom Workflow
+name: Android Kero RDP Test
 
 on:
   workflow_dispatch:
