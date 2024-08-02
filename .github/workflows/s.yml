@@ -1,4 +1,4 @@
-name: Kero Android VNC
+name: Kero Android VNC 1
 
 on:
   workflow_dispatch:
